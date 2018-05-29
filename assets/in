@@ -42,6 +42,7 @@ commit_verification_keys=$(jq -r '(.source.commit_verification_keys // [])[]' < 
 gpg_keyserver=$(jq -r '.source.gpg_keyserver // "hkp://ipv4.pool.sks-keyservers.net/"' < $payload)
 disable_git_lfs=$(jq -r '(.params.disable_git_lfs // false)' < $payload)
 clean_tags=$(jq -r '(.params.clean_tags // false)' < $payload)
+tag=$(git tag --points-at HEAD | jq -R  ". | select(. != \"\")" | jq -r -s "map(.) | join(\",\")")
 
 configure_git_global "${git_config_payload}"
 
@@ -150,6 +151,9 @@ echo "${return_ref}" > .git/ref
 # Using https://github.com/cloudfoundry-community/slack-notification-resource
 # for example
 git log -1 --format=format:%B > .git/commit_message
+
+echo $branch > .git/branch
+echo $tag > .git/tag
 
 metadata=$(git_metadata)
 
